@@ -127,7 +127,6 @@ class Eviroment(object):
 	def MonteCarlo(self,iter_time):
 		agent=Agent_greedy()
 		for episode in range(iter_time):
-			#print(agent.Ns((4,13)))
 			self.reset()
 			agent.reset()
 			self.dealer_score=self.dealer_show=np.random.randint(1,11)
@@ -138,12 +137,10 @@ class Eviroment(object):
 				state=(self.dealer_show,agent.score)
 				epsilon=N0/(N0+agent.Ns(state))
 				action=agent.greedy(state,epsilon)
-				#print('current_state:',state,'current_action:',action)
 				state_action=state+tuple([action])
 				path.append(state_action)
 				agent.Q_N[state_action][1]+=1
 				_,reward,end=self.step(agent,action_int(action))
-				#print('next_state:',(self.dealer_show,agent.score),'reward:',reward)
 				if end:
 					done=True
 				agent.buffer[state_action]+=reward					
@@ -166,21 +163,17 @@ class Eviroment(object):
 			epsilon=N0/(N0+agent.Ns(state))
 			action=agent.greedy(state,epsilon)
 			while not done:
-				#print('current_state:',state)
-				#print('current_action:',action_int(action))
 				state_action=state+tuple([action])
 				agent.Q_N[state_action][1]+=1
 				_,reward,end=self.step(agent,action_int(action))
 				if end:
-					#print('next_state:',(self.dealer_show,agent.score))
+					
 					done=True
 					error=reward-agent.Q_N[state_action][0]
 				else:
 					next_state=(self.dealer_show,agent.score)
-					#print('next_state:',next_state)
 					epsilon=N0/(N0+agent.Ns(next_state))
 					next_action=agent.greedy(next_state,epsilon)
-					#print('next_action:',action_int(next_action))
 					next_state_action=next_state+tuple([next_action])
 					error=reward+agent.Q_N[next_state_action][0]-agent.Q_N[state_action][0]
 					state=next_state
@@ -195,20 +188,34 @@ class Eviroment(object):
 	 
 if __name__ == '__main__': 
 	game=Eviroment()
-	agent=game.MonteCarlo(1000000)
-	#agent=game.TD(1,1000000)
+	agent_mc=game.MonteCarlo(1000000)
+	agent_td=game.TD(1,1000000)
 	dealer=np.array([i for i in range(1,11)])
 	player=np.array([i for i in range(1,22)])
-	v_star=[]
+	v_star_mc=[]
+	v_star_td=[]
 	x_axi=[]
 	y_axi=[]
 	for x in dealer:
 		for y in player:
-			val=max([agent.Q_N[(x,y,1)][0],agent.Q_N[(x,y,0)][0]])
-			v_star.append(val)
+			val_mc=max([agent_mc.Q_N[(x,y,1)][0],agent_mc.Q_N[(x,y,0)][0]])
+			val_td=max([agent_td.Q_N[(x,y,1)][0],agent_td.Q_N[(x,y,0)][0]])
+			v_star_mc.append(val_mc)
+			v_star_td.append(val_td)
 			x_axi.append(x)
 			y_axi.append(y)
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
-	ax.scatter(x_axi,y_axi,v_star)
+	fig1 = plt.figure(1)
+	fig2 = plt.figure(2)
+	ax1 = fig1.add_subplot(111, projection='3d')
+	ax1.set_xlabel('dealer')
+	ax1.set_ylabel('agent score')
+	ax1.set_zlabel=('return')
+	ax1.set_title('MonteCarlo control')
+	ax2 = fig2.add_subplot(111, projection='3d')
+	ax2.set_xlabel('dealer')
+	ax2.set_ylabel('agent score')
+	ax2.set_zlabel=('return')
+	ax2.set_title('TD control')
+	ax1.scatter(x_axi,y_axi,v_star_mc)
+	ax2.scatter(x_axi,y_axi,v_star_td)
 	plt.show()

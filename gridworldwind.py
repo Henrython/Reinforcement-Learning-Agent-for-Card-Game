@@ -55,38 +55,25 @@ def sarsa(size,namda,start,end,iter_time,alpha=0.1,gamma=0.8):
 	for i in range(iter_time):
 		e=initialize(size)[1]
 		start=state['start']
-		#pi[start]='greedy'
-		#print('start:',start)
-		#print(q[start])
-		#print(pi)
 		action=greedy_improve(q[start])#sample a action for the epsilon_greedy
-		#print('action:',action)
 		terminate=False
 		while not terminate:
-			#print('action:',action)
-			#print('position:',start)
 			go=walk[action]
 			force=state[start[0]][0]
 			if force !=0:
 				go=(go[0],force)
-			#print('go:',go)
 			next_state=(bound(start[0]+go[0],size),bound(start[1]+go[1],size))
-			#print('next_state',next_state)
 			if next_state==state['end']:
 				reward=10
 				terminate=True
 			else:
 				reward=-1
 			next_action=greedy_improve(q[next_state])
-			#print('next_action:',next_action)
-			#print(q[next_state][next_action])
 			td_erro=reward+gamma*q[next_state][next_action]-q[start][action]
 			e[start][action]+=1
 			for s in q:
 				q[s]=q[s]+alpha*td_erro*e[s]
-				#print(q[s])
 				e[s]=gamma*namda*e[s]
-				#print(e[s])
 			start=next_state
 			action=next_action
 	s=state['start']
@@ -100,10 +87,4 @@ def sarsa(size,namda,start,end,iter_time,alpha=0.1,gamma=0.8):
 			
 if __name__=='__main__':
 	size=10
-	# print(state_space(10,(0,4),(7,4),wind=[(4,1,0),(5,1,0.3),(6,1,0)]),end='\n')
-	# q,action,e=initialize(size)
-	# print('q:',q,end='\n')
-	# print('action:',action,end='\n')
-	# print('e:',e,end='\n')
 	q_val=sarsa(10,0.01,(0,4),(6,5),100000)
-	#s=state_space(size,(0,4),(6,5),wind=[(3,1,0),(4,1,0),(5,1,0)])
